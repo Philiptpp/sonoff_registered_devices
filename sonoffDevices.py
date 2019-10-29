@@ -1,4 +1,4 @@
-import time, hmac, hashlib, random, base64, json, requests, uuid
+import time, hmac, hashlib, random, base64, json, requests, uuid, string
 from http import HTTPStatus
 
 
@@ -8,9 +8,9 @@ def create_signature(credentials):
         'password': credentials['password'],
         'version': '6',
         'ts': int(time.time()),
-        'nonce': ''.join([str(random.randint(0, 9)) for i in range(15)]),
+        'nonce': ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8)),
         'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
-        'imei': str(uuid.uuid4()),
+        'imei': credentials['imei'],
         'os': 'iOS',
         'model': 'iPhone10,6',
         'romVersion': '11.1.2',
@@ -44,17 +44,17 @@ def login(credentials, api_region='us'):
         print('API region set to: {}'.format(api_region))
         return login(credentials, api_region)
 
-    return resp
+    return {"response": resp, "region": api_region, "imei": credentials['imei']}
 
 
 def list_devices(user_info, attempt=1):
     headers = {
-        'Authorization' : 'Bearer ' + user_info['at'],
+        'Authorization' : 'Bearer ' + user_info['response']['at'],
         'Content-Type'  : 'application/json;charset=UTF-8'
     }
 
-    r = requests.get('https://{}-api.coolkit.cc:8080/api/user/device?lang=en&apiKey={}&getTags=1'.format(user_info['region'], user_info['user']['apikey']),
-            headers=headers)
+    r = requests.get('https://{}-api.coolkit.cc:8080/api/user/device?lang=en&apiKey={}&getTags=1&version=6&ts=%s&nonce=%s&appid=oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq&imei=%s&os=iOS&model=%s&romVersion=%s&appVersion=%s'.format(
+            user_info['region'], user_info['response']['user']['apikey'], str(int(time.time())), ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8)), user_info['imei'], 'iPhone10,6', '11.1.2', '3.5.3'), headers=headers)
 
     resp = r.json()
     if 'error' in resp and resp['error'] in [HTTPStatus.BAD_REQUEST, HTTPStatus.UNAUTHORIZED]:
@@ -63,7 +63,7 @@ def list_devices(user_info, attempt=1):
             return None
         return list_devices(user_info, attempt+1)
 
-    return resp
+    return resp['devicelist']
 
 
 if __name__ == '__main__':
@@ -75,16 +75,17 @@ if __name__ == '__main__':
 
     user_info = login({
         'email': email,
-        'password': password
+        'password': password,
+		'imei': str(uuid.uuid4())
         })
     
-    if 'at' not in user_info:
+    if 'at' not in user_info['response']:
         print("Login failed! Please check credentials!")
 
     else:
         devices = list_devices(user_info)
         print('Found {} devices registered to this account'.format(len(devices)))
-        print('\nAPI Key: {}\n'.format(user_info['user']['apikey']))
+        print('\nAPI Key: {}\n'.format(user_info['response']['user']['apikey']))
         if len(devices):
             print('{:10} {:10} : {:40} [{}]'.format('Brand', 'Model', 'Device Name', 'Device ID'))
             print('{:10} {:10} : {:40}  {}'.format('=====', '=====', '===========', '========='))
