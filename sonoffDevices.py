@@ -9,14 +9,14 @@ def create_signature(credentials):
         'version': '6',
         'ts': int(time.time()),
         'nonce': ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8)),
-        'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
+        'appid': 'R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv',
         'imei': credentials['imei'],
         'os': 'iOS',
-        'model': 'iPhone10,6',
-        'romVersion': '11.1.2',
-        'appVersion': '3.5.3'
+        'model': 'iPhone11,8',
+        'romVersion': '13.2',
+        'appVersion': '3.11.0'
     }
-    decryptedAppSecret = b'6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM'
+    decryptedAppSecret = b'1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru'
     hex_dig = hmac.new(
         decryptedAppSecret,
         str.encode(json.dumps(app_details)),
