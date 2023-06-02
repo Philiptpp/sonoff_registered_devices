@@ -87,7 +87,12 @@ if __name__ == '__main__':
         print('Found {} devices registered to this account'.format(len(devices)))
         print('\nAPI Key: {}\n'.format(user_info['response']['user']['apikey']))
         if len(devices):
-            print('{:10} {:10} : {:40} [{:10}]  {}'.format('Brand', 'Model', 'Device Name', 'Device ID', 'Device API Key'))
-            print('{:10} {:10} : {:40}  {:11}  {}'.format('=====', '=====', '===========', '=========', '=============='))
+            print('{:10} {:10} : {:40} [{:10}]  {:40} {:20}'.format('Brand', 'Model', 'Device Name', 'Device ID', 'Device API Key', 'Device MAC ID'))
+            print('{:10} {:10} : {:40} {:11}   {:40} {:20}'.format('=====', '=====', '===========', '===========', '==============', '============='))
             for device in devices:
-                print('{:10} {:10} : {:40} [{:10}] {}'.format(device['brandName'], device['productModel'], device['name'], device['deviceid'], device['devicekey']))
+                print('{:10} {:10} : {:40} [{:10}]  {:40} {:20}'.format(device['brandName'],
+                                                                        device['productModel'],
+                                                                        device['name'],
+                                                                        device['deviceid'],
+                                                                        device['devicekey'],
+                                                                        device['params']['staMac']))
